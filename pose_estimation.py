@@ -278,3 +278,26 @@ def estimate_pose(ordered_pts_px, K, distCoeffs, R_phys, d_phys=0.010):
         out["pnp"] = {"ok": False, "reason": str(e)}
 
     return out
+def convert_analytic_to_matrix(out):
+    analytic = out["analytic"]
+
+    if not analytic["ok"]:
+        return None  # Don't process if failed
+
+    R = analytic["range_m"]
+    az_deg, el_deg = analytic["AzEl_deg"]
+    roll, pitch, yaw = analytic["rpy321_deg"]  # alpha, beta, gamma
+
+    # Convert degrees to radians
+    az = math.radians(az_deg)
+    el = math.radians(el_deg)
+
+    # Position
+    x = R * math.cos(el) * math.cos(az)
+    y = R * math.cos(el) * math.sin(az)
+    z = R * math.sin(el)
+
+    # Form the 6×1 matrix
+    matrix_6x1 = np.array([[x], [y], [z], [roll], [pitch], [yaw]])
+
+    return readings
